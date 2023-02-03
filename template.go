@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/pseudomuto/protoc-gen-doc/extensions"
+	"github.com/ibraim-denislyam/protoc-gen-doc/extensions"
 	"github.com/pseudomuto/protokit"
 )
 
@@ -471,6 +471,14 @@ func parseMessageExtension(pe *protokit.ExtensionDescriptor) *MessageExtension {
 
 func parseMessageField(pf *protokit.FieldDescriptor, oneofDecls []*descriptor.OneofDescriptorProto) *MessageField {
 	t, lt, ft := parseType(pf)
+	opts := map[string]interface{}{}
+	if pf.GetOptions().GetDeprecated() {
+		opts["deprecated"] = true
+	}
+
+	if len(pf.GetJsonName()) > 0 {
+		opts["json_name"] = pf.GetJsonName()
+	}
 
 	m := &MessageField{
 		Name:         pf.GetName(),
@@ -480,7 +488,7 @@ func parseMessageField(pf *protokit.FieldDescriptor, oneofDecls []*descriptor.On
 		LongType:     lt,
 		FullType:     ft,
 		DefaultValue: pf.GetDefaultValue(),
-		Options:      mergeOptions(extractOptions(pf.GetOptions()), extensions.Transform(pf.OptionExtensions)),
+		Options:      mergeOptions(opts, extensions.Transform(pf.OptionExtensions)),
 		IsOneof:      pf.OneofIndex != nil,
 	}
 
